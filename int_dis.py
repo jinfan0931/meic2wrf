@@ -5,18 +5,30 @@
 # E-mail:      jin.fan@outlook.com                                                                                #
 # Environment: Python 3.7.7; pynio 1.5.5                                                                          #
 ###################################################################################################################
+# June 8, 2020, added ll_area_new(more accurent meic grid area), meic2wrf_interp(linear interpolation instead of 
+#               nearest)   (by Hao Lyu) 
 
 ######################################
 #     1. area of lat_lon grids       #
 ######################################
 import numpy as np
 
-def ll_area(lat,res):
+def ll_area(lat,res):  #input : lat : np.array((200, 320))
     Re=6371.392
-    X=Re*np.cos(lat*(np.pi/180))*(np.pi/180)*res
-    Y=Re*(np.pi/180)*res
+    X=Re*np.cos(lat*(np.pi/180))*(np.pi/180)*res  #np.array((200, 320))
+    Y=Re*(np.pi/180)*res  #float
     return X*Y
 
+def ll_area_new(lat,res):
+    from area import area
+    startlon=0
+    return_area = np.zeros_like(lat)
+    isize,jsize = return_area.shape
+    for i in range(isize):
+        for j in range(jsize):
+            obj = {'type':'Polygon','coordinates':[[[startlon,lat[i,j]-0.125],[startlon,lat[i,j]+0.125],[startlon+0.25,lat[i,j]+0.125],[startlon+0.25,lat[i,j]-0.125]]]}
+            return_area[i,j] = area(obj)/1000.0/1000.0
+    return return_area
 ###################################
 #    2. 2D interpolation func.    #
 #       ----dx----|--cdx---       #
@@ -44,7 +56,7 @@ def meic2wrf(lon_inp,lat_inp,lon,lat,emis,):#lon/lat_inp: model; lon/lat: meic; 
         dx, cdx, ix = std_p(px,ox)
         dy, cdy, iy = std_p(py,oy)
         return inp(ix, iy, dx, dy, cdx, cdy)
-   
+
     emis_inp=np.zeros(lon_inp.shape, dtype='float32')
     y_cnt =0
     for (row_lat, row_lon) in zip(lat_inp, lon_inp): #2D meic coordinates to 1D
@@ -55,6 +67,13 @@ def meic2wrf(lon_inp,lat_inp,lon,lat,emis,):#lon/lat_inp: model; lon/lat: meic; 
         y_cnt +=1
     return emis_inp
 
+def meic2wrf_interp(lon_inp,lat_inp,lon,lat,emis,interp_method = 'bilinear'):#lon/lat_inp: model; lon/lat: meic; emis: meic emis
+    import xesmf as xe
+    grid_out = {'lon': lon_inp,'lat': lat_inp}
+    grid_in = {'lon': lon,'lat': lat}    
+    regridder = xe.Regridder(grid_in, grid_out, interp_method,reuse_weights=True)
+    emis_inp = regridder(emis)
+    return emis_inp
 ###########################################
 #  3. vertical & time distribution func.  #
 ###########################################
