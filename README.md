@@ -1,6 +1,6 @@
 # meic2wrf
-Interpolating &amp; distributing MEIC 0.25*0.25 emission inventory onto WRF-Chem grids
-Origin: https://github.com/jinfan0931/meic2wrf
+Interpolating &amp; distributing MEIC 0.25*0.25 emission inventory onto WRF-Chem grids  
+Origin: https://github.com/jinfan0931/meic2wrf  
 
 # Additional function:
 * A no-GUI script for command line user
