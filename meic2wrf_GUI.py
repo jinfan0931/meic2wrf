@@ -330,7 +330,7 @@ def itp_dis():
                 f_post=Nio.open_file(ent_dir.get()+'/merged/'+spec+'.nc')
                 lon=f_post.variables['lon'][:]
                 lat=f_post.variables['lat'][:]
-                section=[(f_post.variables[sec][:,:]*10e6)/(ll_area(lat,0.25)*30*24*M) for sec in ['act','idt','pwr','rdt','tpt',]]
+                section=[(f_post.variables[sec][:,:]*1e6)/(ll_area(lat,0.25)*30*24*M) for sec in ['act','idt','pwr','rdt','tpt',]]
                 f_post.close()
                 sections=[meic2wrf(lon_inp,lat_inp,lon,lat,emis,) for emis in section]
                 c=[sec2zt(i,j,k) for i,j,k in zip(sections,sec_z,sec_t)]
@@ -342,7 +342,7 @@ def itp_dis():
                 f_post=Nio.open_file(ent_dir.get()+'/merged/'+spec+'.nc')
             #lon=f_post.variables['lon'][:]
             #lat=f_post.variables['lat'][:]
-                section=[(f_post.variables[sec][:,:]*10e6)/(ll_area(lat,0.25)*30*24) for sec in ['act','idt','pwr','rdt','tpt',]]
+                section=[(f_post.variables[sec][:,:]*1e6)/(ll_area(lat,0.25)*30*24) for sec in ['act','idt','pwr','rdt','tpt',]]
                 f_post.close()
                 sections=[meic2wrf(lon_inp,lat_inp,lon,lat,emis,) for emis in section]
                 c=[sec2zt(i,j,k) for i,j,k in zip(sections,sec_z,sec_t)]
@@ -353,7 +353,7 @@ def itp_dis():
                 f_post=Nio.open_file(ent_dir.get()+'/merged/'+spec+'.nc')
             #lon=f_post.variables['lon'][:]
             #lat=f_post.variables['lat'][:]
-                section=[(f_post.variables[sec][:,:]*10e6)/(ll_area(lat,0.25)*30*24*3600) for sec in ['act','idt','pwr','rdt','tpt',]]
+                section=[(f_post.variables[sec][:,:]*1e6)/(ll_area(lat,0.25)*30*24*3600) for sec in ['act','idt','pwr','rdt','tpt',]]
                 f_post.close()
                 sections=[meic2wrf(lon_inp,lat_inp,lon,lat,emis,) for emis in section]
                 c=[sec2zt(i,j,k) for i,j,k in zip(sections,sec_z,sec_t)]
@@ -611,7 +611,7 @@ def itp_dis():
             f_post=Nio.open_file(ent_dir.get()+'/merged/'+spec+'.nc')
             lon=f_post.variables['lon'][:]
             lat=f_post.variables['lat'][:]
-            section=[(f_post.variables[sec][:,:]*10e6)/(ll_area(lat,0.25)*30*24*M) for sec in ['act','idt','pwr','rdt','tpt',]]
+            section=[(f_post.variables[sec][:,:]*1e6)/(ll_area(lat,0.25)*30*24*M) for sec in ['act','idt','pwr','rdt','tpt',]]
             f_post.close()
             sections=[meic2wrf(lon_inp,lat_inp,lon,lat,emis,) for emis in section]
             c=[sec2zt(i,j,k) for i,j,k in zip(sections,sec_z_d,sec_t_d)]
@@ -623,7 +623,7 @@ def itp_dis():
             f_post=Nio.open_file(ent_dir.get()+'/merged/'+spec+'.nc')
         #lon=f_post.variables['lon'][:]
         #lat=f_post.variables['lat'][:]
-            section=[(f_post.variables[sec][:,:]*10e6)/(ll_area(lat,0.25)*30*24) for sec in ['act','idt','pwr','rdt','tpt',]]
+            section=[(f_post.variables[sec][:,:]*1e6)/(ll_area(lat,0.25)*30*24) for sec in ['act','idt','pwr','rdt','tpt',]]
             f_post.close()
             sections=[meic2wrf(lon_inp,lat_inp,lon,lat,emis,) for emis in section]
             c=[sec2zt(i,j,k) for i,j,k in zip(sections,sec_z_d,sec_t_d)]
@@ -634,7 +634,7 @@ def itp_dis():
             f_post=Nio.open_file(ent_dir.get()+'/merged/'+spec+'.nc')
         #lon=f_post.variables['lon'][:]
         #lat=f_post.variables['lat'][:]
-            section=[(f_post.variables[sec][:,:]*10e6)/(ll_area(lat,0.25)*30*24*3600) for sec in ['act','idt','pwr','rdt','tpt',]]
+            section=[(f_post.variables[sec][:,:]*1e6)/(ll_area(lat,0.25)*30*24*3600) for sec in ['act','idt','pwr','rdt','tpt',]]
             f_post.close()
             sections=[meic2wrf(lon_inp,lat_inp,lon,lat,emis,) for emis in section]
             c=[sec2zt(i,j,k) for i,j,k in zip(sections,sec_z_d,sec_t_d)]
