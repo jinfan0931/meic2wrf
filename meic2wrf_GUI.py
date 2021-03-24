@@ -6,15 +6,17 @@
 # Environment: Python 3.7.7; pynio 1.5.5                                                                          #
 ###################################################################################################################
 
-import Nio
-import tkinter as tk
-from tkinter import filedialog
-import numpy as np
+import fnmatch
+import glob
 import os
+import shutil
+import tkinter as tk
+from tkinter import filedialog, messagebox
+
+import Nio
+import numpy as np
+
 from int_dis import *
-from tkinter import messagebox
-import fnmatch 
-import shutil 
 
 root=tk.Tk()
 root.title('MEIC污染源清单向WRF-Chem模式网格插值分配程序')
@@ -36,95 +38,64 @@ def bws_meic():
 def merge_meic_dept(): 
     if os.path.exists(ent_dir.get()+'/merged/'): 
         shutil.rmtree(ent_dir.get()+'/merged/')
-        os.mkdir(ent_dir.get()+'/merged/')
-        for i,j in zip(['*BC*','*CO[!2]*','*CO2*','*NH3*','*NOx*','*[!V]OC*','*PM2.5*','*PMcoarse*','*ALD*',\
-        '*CSL*','*ETH*','*GLY*','*HC3*','*HC5*','*HC8*','*HCHO*',\
-        '*ISO*','*KET*','*MACR*','*MGLY*','*MVK*','*NR*','*NVOL*',\
-        '*OL2*','*OLI*','*OLT*','*ORA1*','*ORA2*','*TOL*','*XYL*','*SO2*','*VOC*',], ['BC','CO','CO2','NH3','NOx','OC','PM2.5','PMcoarse','ALD',\
-        'CSL','ETH','GLY','HC3','HC5','HC8','HCHO',\
-        'ISO','KET','MACR','MGLY','MVK','NR','NVOL',\
-        'OL2','OLI','OLT','ORA1','ORA2','TOL','XYL','SO2','VOC',]):
-            fn_act=ent_dir.get()+'/'+fnmatch.filter(fnmatch.filter(os.listdir(ent_dir.get()), i), '*agr*nc')[0]
-            fn_idt=ent_dir.get()+'/'+fnmatch.filter(fnmatch.filter(os.listdir(ent_dir.get()), i), '*ind*nc')[0]
-            fn_pwr=ent_dir.get()+'/'+fnmatch.filter(fnmatch.filter(os.listdir(ent_dir.get()), i), '*pow*nc')[0]
-            fn_rdt=ent_dir.get()+'/'+fnmatch.filter(fnmatch.filter(os.listdir(ent_dir.get()), i), '*res*nc')[0]
-            fn_tpt=ent_dir.get()+'/'+fnmatch.filter(fnmatch.filter(os.listdir(ent_dir.get()), i), '*tra*nc')[0]
+        os.makedirs(ent_dir.get()+'/merged/')
+    print("++++++ent_dir++++++",ent_dir.get())
+    for i,j in zip(['*BC*','*CO[!2]*','*CO2*','*NH3*','*NOx*','*[!V]OC*','*PM2.5*','*PMcoarse*','*ALD*',\
+    '*CSL*','*ETH*','*GLY*','*HC3*','*HC5*','*HC8*','*HCHO*',\
+    '*ISO*','*KET*','*MACR*','*MGLY*','*MVK*','*NR*','*NVOL*',\
+    '*OL2*','*OLI*','*OLT*','*ORA1*','*ORA2*','*TOL*','*XYL*','*SO2*','*VOC*',], ['BC','CO','CO2','NH3','NOx','OC','PM2.5','PMcoarse','ALD',\
+    'CSL','ETH','GLY','HC3','HC5','HC8','HCHO',\
+    'ISO','KET','MACR','MGLY','MVK','NR','NVOL',\
+    'OL2','OLI','OLT','ORA1','ORA2','TOL','XYL','SO2','VOC',]):
 
-            f_act=Nio.open_file(fn_act)
-            f_idt=Nio.open_file(fn_idt)
-            f_pwr=Nio.open_file(fn_pwr)
-            f_rdt=Nio.open_file(fn_rdt)
-            f_tpt=Nio.open_file(fn_tpt)
+        # new:2016_1_agriculture_BC.nc
+        # old:2016_01__agriculture__BC.nc
 
-            act=f_act.variables['z'][:].reshape((200, 320),)[::-1]
-            act=np.where(act>0.0,act*1,0.0)
-            idt=f_idt.variables['z'][:].reshape((200, 320),)[::-1]
-            idt=np.where(idt>0.0,idt*1,0.0)
-            pwr=f_pwr.variables['z'][:].reshape((200, 320),)[::-1]
-            pwr=np.where(pwr>0.0,pwr*1,0.0)
-            rdt=f_rdt.variables['z'][:].reshape((200, 320),)[::-1]
-            rdt=np.where(rdt>0.0,rdt*1,0.0)
-            tpt=f_tpt.variables['z'][:].reshape((200, 320),)[::-1]
-            tpt=np.where(tpt>0.0,tpt*1,0.0)
+        try:
+            fn_act = glob.glob(ent_dir.get()+'/*_agr*_' +j+".nc" )[0]
+            fn_idt = glob.glob(ent_dir.get()+'/*_ind*_' +j+".nc" )[0]
+            fn_pwr = glob.glob(ent_dir.get()+'/*_pow*_' +j+".nc" )[0]
+            fn_rdt = glob.glob(ent_dir.get()+'/*_res*_' +j+".nc" )[0]
+            fn_tpt = glob.glob(ent_dir.get()+'/*_tra*_' +j+".nc" )[0]
+        except:
+            fn_act = glob.glob(ent_dir.get()+"/*_agr*_PM25.nc" )[0]   # 新旧文件一个是pm2.5一个是pm25
+            fn_idt = glob.glob(ent_dir.get()+"/*_ind*_PM25.nc" )[0]
+            fn_pwr = glob.glob(ent_dir.get()+"/*_pow*_PM25.nc" )[0]
+            fn_rdt = glob.glob(ent_dir.get()+"/*_res*_PM25.nc" )[0]
+            fn_tpt = glob.glob(ent_dir.get()+"/*_tra*_PM25.nc" )[0]
 
-            lon=np.arange(70.125,150,0.25,dtype=np.float32) 
-            lat=np.arange(10.125,60,0.25,dtype=np.float32)
-            lon,lat=np.meshgrid(lon,lat)
 
-            f=Nio.open_file(ent_dir.get()+'/merged/'+j+'.nc','c')
-            f.create_dimension('lon',320)
-            f.create_dimension('lat',200)
+        f_act=Nio.open_file(fn_act)
+        f_idt=Nio.open_file(fn_idt)
+        f_pwr=Nio.open_file(fn_pwr)
+        f_rdt=Nio.open_file(fn_rdt)
+        f_tpt=Nio.open_file(fn_tpt)
 
-            for var,val in zip(['act','idt','pwr','rdt','tpt','lon','lat'],[act,idt,pwr,rdt,tpt,lon,lat]):
-                f.create_variable(var,'f',('lat','lon',))
-                f.variables[var][:] = val
+        act=f_act.variables['z'][:].reshape((200, 320),)[::-1]
+        act=np.where(act>0.0,act*1,0.0)
+        idt=f_idt.variables['z'][:].reshape((200, 320),)[::-1]
+        idt=np.where(idt>0.0,idt*1,0.0)
+        pwr=f_pwr.variables['z'][:].reshape((200, 320),)[::-1]
+        pwr=np.where(pwr>0.0,pwr*1,0.0)
+        rdt=f_rdt.variables['z'][:].reshape((200, 320),)[::-1]
+        rdt=np.where(rdt>0.0,rdt*1,0.0)
+        tpt=f_tpt.variables['z'][:].reshape((200, 320),)[::-1]
+        tpt=np.where(tpt>0.0,tpt*1,0.0)
 
-            f.close()
-    else:
-        os.mkdir(ent_dir.get()+'/merged/') 
-        for i,j in zip(['*BC*','*CO[!2]*','*CO2*','*NH3*','*NOx*','*[!V]OC*','*PM2.5*','*PMcoarse*','*ALD*',\
-        '*CSL*','*ETH*','*GLY*','*HC3*','*HC5*','*HC8*','*HCHO*',\
-        '*ISO*','*KET*','*MACR*','*MGLY*','*MVK*','*NR*','*NVOL*',\
-        '*OL2*','*OLI*','*OLT*','*ORA1*','*ORA2*','*TOL*','*XYL*','*SO2*','*VOC*',], ['BC','CO','CO2','NH3','NOx','OC','PM2.5','PMcoarse','ALD',\
-        'CSL','ETH','GLY','HC3','HC5','HC8','HCHO',\
-        'ISO','KET','MACR','MGLY','MVK','NR','NVOL',\
-        'OL2','OLI','OLT','ORA1','ORA2','TOL','XYL','SO2','VOC',]):
-            fn_act=ent_dir.get()+'/'+fnmatch.filter(fnmatch.filter(os.listdir(ent_dir.get()), i), '*agr*nc')[0]
-            fn_idt=ent_dir.get()+'/'+fnmatch.filter(fnmatch.filter(os.listdir(ent_dir.get()), i), '*ind*nc')[0]
-            fn_pwr=ent_dir.get()+'/'+fnmatch.filter(fnmatch.filter(os.listdir(ent_dir.get()), i), '*pow*nc')[0]
-            fn_rdt=ent_dir.get()+'/'+fnmatch.filter(fnmatch.filter(os.listdir(ent_dir.get()), i), '*res*nc')[0]
-            fn_tpt=ent_dir.get()+'/'+fnmatch.filter(fnmatch.filter(os.listdir(ent_dir.get()), i), '*tra*nc')[0]
+        lon=np.arange(70.125,150,0.25,dtype=np.float32) 
+        lat=np.arange(10.125,60,0.25,dtype=np.float32)
+        lon,lat=np.meshgrid(lon,lat)
 
-            f_act=Nio.open_file(fn_act)
-            f_idt=Nio.open_file(fn_idt)
-            f_pwr=Nio.open_file(fn_pwr)
-            f_rdt=Nio.open_file(fn_rdt)
-            f_tpt=Nio.open_file(fn_tpt)
+        f=Nio.open_file(ent_dir.get()+'/merged/'+j+'.nc','c')
+        f.create_dimension('lon',320)
+        f.create_dimension('lat',200)
 
-            act=f_act.variables['z'][:].reshape((200, 320),)[::-1]
-            act=np.where(act>0.0,act*1,0.0)
-            idt=f_idt.variables['z'][:].reshape((200, 320),)[::-1]
-            idt=np.where(idt>0.0,idt*1,0.0)
-            pwr=f_pwr.variables['z'][:].reshape((200, 320),)[::-1]
-            pwr=np.where(pwr>0.0,pwr*1,0.0)
-            rdt=f_rdt.variables['z'][:].reshape((200, 320),)[::-1]
-            rdt=np.where(rdt>0.0,rdt*1,0.0)
-            tpt=f_tpt.variables['z'][:].reshape((200, 320),)[::-1]
-            tpt=np.where(tpt>0.0,tpt*1,0.0)
+        for var,val in zip(['act','idt','pwr','rdt','tpt','lon','lat'],[act,idt,pwr,rdt,tpt,lon,lat]):
+            f.create_variable(var,'f',('lat','lon',))
+            f.variables[var][:] = val
 
-            lon=np.arange(70.125,150,0.25,dtype=np.float32) 
-            lat=np.arange(10.125,60,0.25,dtype=np.float32)
-            lon,lat=np.meshgrid(lon,lat)
+        f.close()
 
-            f=Nio.open_file(ent_dir.get()+'/merged/'+j+'.nc','c')
-            f.create_dimension('lon',320)
-            f.create_dimension('lat',200)
-
-            for var,val in zip(['act','idt','pwr','rdt','tpt','lon','lat'],[act,idt,pwr,rdt,tpt,lon,lat]):
-                f.create_variable(var,'f',('lat','lon',))
-                f.variables[var][:] = val
-
-            f.close()
 
 b_btn = tk.Button(root, text='浏览', command=bws_meic, width=15) 
 b_btn.grid(row=1,column=2)
