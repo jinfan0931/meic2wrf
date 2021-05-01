@@ -8,12 +8,15 @@
 # June 8, 2020, added noGUI script (by Hao Lyu)
 # Environment added: area(https://github.com/scisco/area)
 
+import fnmatch
+import glob
+import os
+import shutil
+
 import Nio
 import numpy as np
-import os
+
 from int_dis import *
-import fnmatch
-import shutil
 
 meic2wrf = meic2wrf#_interp  #用线性插值替代最邻近插值
 ll_area  = ll_area      #更高精度计算每块meic网格面积
@@ -49,21 +52,20 @@ def merge_meic_dept(ent_dir):  # 生成merge文件夹，预处理排放源文件
                     'CSL', 'ETH', 'GLY', 'HC3', 'HC5', 'HC8', 'HCHO',
                     'ISO', 'KET', 'MACR', 'MGLY', 'MVK', 'NR','NVOL',
                     'OL2', 'OLI', 'OLT', 'ORA1', 'ORA2', 'TOL', 'XYL', 'SO2', 'VOC', ]):
-        fn_act = ent_dir+'/' + \
-            fnmatch.filter(fnmatch.filter(
-                os.listdir(ent_dir), i), '*agr*nc')[0]
-        fn_idt = ent_dir+'/' + \
-            fnmatch.filter(fnmatch.filter(
-                os.listdir(ent_dir), i), '*ind*nc')[0]
-        fn_pwr = ent_dir+'/' + \
-            fnmatch.filter(fnmatch.filter(
-                os.listdir(ent_dir), i), '*pow*nc')[0]
-        fn_rdt = ent_dir+'/' + \
-            fnmatch.filter(fnmatch.filter(
-                os.listdir(ent_dir), i), '*res*nc')[0]
-        fn_tpt = ent_dir+'/' + \
-            fnmatch.filter(fnmatch.filter(
-                os.listdir(ent_dir), i), '*tra*nc')[0]
+        # new:2016_1_agriculture_BC.nc
+        # old:2016_01__agriculture__BC.nc
+        try:
+            fn_act = glob.glob(ent_dir+'/*_agr*_' +j+".nc" )[0]
+            fn_idt = glob.glob(ent_dir+'/*_ind*_' +j+".nc" )[0]
+            fn_pwr = glob.glob(ent_dir+'/*_pow*_' +j+".nc" )[0]
+            fn_rdt = glob.glob(ent_dir+'/*_res*_' +j+".nc" )[0]
+            fn_tpt = glob.glob(ent_dir+'/*_tra*_' +j+".nc" )[0]
+        except:
+            fn_act = glob.glob(ent_dir+"/*_agr*_PM25.nc" )[0]   # 新旧文件一个是pm2.5一个是pm25
+            fn_idt = glob.glob(ent_dir+"/*_ind*_PM25.nc" )[0]
+            fn_pwr = glob.glob(ent_dir+"/*_pow*_PM25.nc" )[0]
+            fn_rdt = glob.glob(ent_dir+"/*_res*_PM25.nc" )[0]
+            fn_tpt = glob.glob(ent_dir+"/*_tra*_PM25.nc" )[0]
 
         f_act = Nio.open_file(fn_act)
         f_idt = Nio.open_file(fn_idt)
@@ -244,8 +246,8 @@ def itp_dis(ent_inp,ent_dir,save_dir):
 
 
 if __name__ == '__main__':
-    ent_dir = "/Users/jf/Desktop/make_emis/MEIC_2016_month/01/"              #请设置为自己的排放源数据所在目录的路径
-    ent_inp = "/Users/jf/Desktop/meic2wrf-master/wrfinput_d01"               #请设置为自己的wrfinput文件所在路径
-    save_dir = "/Users/jf/Desktop/meic2wrf-master/"                          #请设置生成的wrfchemi文件保存目录路径
+    ent_dir = "/home/em/桌面/test/201601/"              #请设置为自己的排放源数据所在目录的路径
+    ent_inp = "/home/em/桌面/test/meic2wrf/wrfinput_d01"               #请设置为自己的wrfinput文件所在路径
+    save_dir = "/home/em/桌面/test/meic2wrf/ssssaaaa"                          #请设置生成的wrfchemi文件保存目录路径
     merge_meic_dept(ent_dir)
     itp_dis(ent_inp,ent_dir,save_dir)
